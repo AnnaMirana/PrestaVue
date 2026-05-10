@@ -1,0 +1,32 @@
+/* UI principal de App.vue (CSS séparé) */
+
+.app-layout { display: flex; min-height: 100vh; background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+
+/* Sidebar */
+.sidebar { width: 260px; background-color: #1a2a6c; color: white; padding: 20px; display: flex; flex-direction: column; }
+.logo { margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+.sidebar nav { display: flex; flex-direction: column; gap: 10px; }
+.sidebar button { background: transparent; border: none; color: #bdc3c7; text-align: left; padding: 12px; cursor: pointer; border-radius: 6px; transition: 0.3s; }
+.sidebar button:hover, .sidebar button.active { background: rgba(255,255,255,0.1); color: white; }
+
+/* Content Area */
+.content { flex: 1; padding: 40px; }
+.view-container { max-width: 800px; margin: 0 auto; }
+.card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.border-red { border-top: 5px solid #e74c3c; }
+
+.field-group { margin-bottom: 20px; }
+label { display: block; margin-bottom: 8px; font-weight: bold; color: #34495e; }
+select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+
+.upload-zone { border: 2px dashed #3498db; padding: 40px; text-align: center; border-radius: 12px; margin-bottom: 20px; cursor: pointer; }
+.file-label { color: #3498db; font-weight: 500; cursor: pointer; }
+
+.btn-primary { width: 100%; padding: 15px; background-color: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.btn-danger { width: 100%; padding: 15px; background-color: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.btn-primary:disabled, .btn-danger:disabled { background-color: #95a5a6; cursor: not-allowed; }
+
+.warning-text { color: #e74c3c; font-size: 0.9rem; margin-bottom: 15px; font-style: italic; }
+.status-box { margin-top: 20px; padding: 15px; background-color: #fff; border-left: 5px solid #3498db; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.error-msg { border-left-color: #e74c3c; color: #e74c3c; }
+

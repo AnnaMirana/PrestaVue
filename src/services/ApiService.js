@@ -1,5 +1,5 @@
-const API_KEY = "1AKJV9RVNJ9UWST4SE4J5BC14WU93LN6";
-const BASE_URL = "http://localhost/orig/api";
+const API_KEY = "5SYPY9N926AJC1FR75YVNBFXVAPJFFBC";
+const BASE_URL = "http://localhost/prestashop/api";
 
 export const ApiService = {
   // MÉTHODE GET : Pour récupérer la liste des IDs (utile pour le Reset)

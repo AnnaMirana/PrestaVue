@@ -2,6 +2,30 @@ import { ApiService } from './ApiService';
 
 export const ResetService = {
 
+    // 🔁 Réinitialiser un module depuis l'UI
+    // BackofficeView passe selectedResetModule.value (products|customers|categories)
+    async resetModule(moduleName) {
+        const name = String(moduleName || '').toLowerCase();
+
+        if (name === 'products') {
+            const count = await this.resetProducts();
+            return { success: true, message: `Produits vidés : ${count}` };
+        }
+
+        if (name === 'customers') {
+            const count = await this.resetCustomers();
+            return { success: true, message: `Clients vidés : ${count}` };
+        }
+
+        if (name === 'categories') {
+            const count = await this.resetCategories();
+            return { success: true, message: `Catégories vidées : ${count}` };
+        }
+
+        // Si jamais l'UI envoie autre chose
+        return { success: false, message: `Module inconnu pour reset : ${moduleName}` };
+    },
+
     // 📦 RÉINITIALISER LES PRODUITS
     async resetProducts() {
         console.log("Nettoyage des produits...");
@@ -53,7 +77,7 @@ export const ResetService = {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
             const elements = xmlDoc.getElementsByTagName('id');
-            
+
             let ids = [];
             for (let i = 0; i < elements.length; i++) {
                 ids.push(elements[i].textContent);
@@ -65,3 +89,4 @@ export const ResetService = {
         }
     }
 };
+

@@ -19,22 +19,29 @@ export const ApiService = {
     }
   },
 
-  // MÉTHODE POST : Pour l'Import
   async post(resource, xmlData) {
-    try {
-      const response = await fetch(`${BASE_URL}/${resource}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Basic ' + btoa(API_KEY + ':'),
-          'Content-Type': 'application/xml'
-        },
-        body: xmlData.trim()
-      });
-      return response.ok;
-    } catch (error) {
-      return false;
+    const url = `${BASE_URL}/${resource}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa(API_KEY + ':'),
+        'Content-Type': 'application/xml; charset=utf-8'
+      },
+      body: xmlData
+    });
+
+    const text = await response.text();
+
+    // Normalisation du retour pour que ImportService puisse faire un test fiable
+    if (!response.ok) {
+      console.error(`Erreur API ${resource} (${response.status}):`, text);
+      return { ok: false, status: response.status, text };
     }
+
+    return { ok: true, status: response.status, text };
   },
+
 
   // MÉTHODE DELETE : Pour le Reset
   async delete(resource, id) {

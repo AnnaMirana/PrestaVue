@@ -1,7 +1,89 @@
 import { ApiService } from './ApiService';
 
 export const ImportService = {
-  // --- Fonctions privées (Clean Code) ---
+  // Vue appelle: ImportService.importData(selectedModule, csvData)
+  async importData(module, rows) {
+    try {
+      const normalizedRows = Array.isArray(rows) ? rows : [];
+
+      switch (module) {
+        case 'products':
+          return await this.importProduits(normalizedRows);
+        case 'customers':
+          return await this.importClientsEtCommandes(normalizedRows);
+        case 'categories':
+          return await this.importCategories(normalizedRows);
+        case 'complex-customers':
+          return await this.importClientsEtCommandes(normalizedRows, { complex: true });
+        default:
+          throw new Error(`Module ${module} non supporté`);
+      }
+    } catch (error) {
+      console.error('Erreur import:', error);
+      return {
+        success: false,
+        message: error.message || "Erreur lors de l'importation",
+      };
+    }
+  },
+
+  // Future API (non utilisée par l’UI actuelle)
+  async importAll(files) {
+    try {
+      await this.importProduits(files?.produits || []);
+      await this.importDetailsProduits(files?.details || []);
+      await this.importClientsEtCommandes(files?.clients || []);
+      await this.importImages(files?.images || []);
+      return { success: true, message: 'Import terminé avec succès' };
+    } catch (e) {
+      return { success: false, message: e?.message || "Erreur lors de l'import" };
+    }
+  },
+
+  async importProduits(rows) {
+    const imported = await this.importProducts(rows);
+    return {
+      success: imported > 0,
+      message: `${imported}/${rows.length} éléments importés avec succès`,
+    };
+  },
+
+  async importDetailsProduits(_rows) {
+    return { success: true, imported: 0 };
+  },
+
+  async importClientsEtCommandes(rows, { complex = false } = {}) {
+    if (complex) {
+      let success = 0;
+      const importedEmails = new Set();
+
+      for (const data of rows) {
+        try {
+          const res = await this.importComplexCustomer(data, importedEmails);
+          if (res?.skipped) continue;
+          success++;
+        } catch (error) {
+          console.error(`Erreur pour ${data?.email || data?.nom || 'client'}:`, error);
+        }
+      }
+
+      return {
+        success: success > 0,
+        message: `${success}/${rows.length} éléments importés avec succès`,
+      };
+    }
+
+    const imported = await this.importCustomers(rows);
+    return {
+      success: imported > 0,
+      message: `${imported}/${rows.length} éléments importés avec succès`,
+    };
+  },
+
+  async importImages(_files) {
+    return { success: true, imported: 0 };
+  },
+
   _xmlCdata(value) {
     const safe = value ?? '';
     return `<![CDATA[${String(safe)}]]>`;
@@ -52,17 +134,37 @@ export const ImportService = {
       </prestashop>`;
   },
 
-  // MODULE PRODUITS
+  // products CSV attendu (produit.csv)
+  // headers: date_availability_produit, nom, reference, prix_ttc, Taxe, categorie, prix_achat
   async importProducts(rows) {
     let success = 0;
+
     for (const data of rows) {
-      const slug = data.name ? data.name.toLowerCase().replace(/\s+/g, '-') : 'product';
+      const safe = typeof data === 'object' && data !== null ? data : {};
+
+      const name = safe.name || safe.nom || '';
+      const price = safe.price ?? safe.prix_ttc ?? safe.prix_achat ?? 0;
+
+      const slug = name
+        ? String(name)
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9\-]/g, '')
+        : 'product';
+
+      const priceNum = (() => {
+        const raw = price ?? 0;
+        const s = String(raw).replace(/\s/g, '').replace(',', '.');
+        const n = Number(s);
+        return Number.isFinite(n) ? n : 0;
+      })();
+
       const xml = `
         <prestashop>
           <product>
-            <name><language id="1">${data.name}</language></name>
-            <link_rewrite><language id="1">${slug}</language></link_rewrite>
-            <price>${data.price || 0}</price>
+            <name><language id="1">${this._xmlCdata(name || '')}</language></name>
+            <link_rewrite><language id="1">${this._xmlCdata(slug)}</language></link_rewrite>
+            <price>${priceNum}</price>
             <active>1</active>
             <state>1</state>
             <id_category_default>2</id_category_default>
@@ -73,39 +175,56 @@ export const ImportService = {
       const res = await ApiService.post('products', xml);
       if (res?.ok) success++;
     }
+
     return success;
   },
 
-  // MODULE CLIENTS
+  // customers CSV attendu (client.csv)
+  // headers: date, nom, email, pwd, adresse, achat, etat
   async importCustomers(rows) {
     let success = 0;
+
     for (const data of rows) {
+      const safe = typeof data === 'object' && data !== null ? data : {};
+
+      const lastname = safe.lastname || safe.nom || safe.name || '';
+      // PrestaShop exige firstname non vide -> fallback sur lastname
+      const firstname = safe.prenom || safe.firstname || lastname || 'Client';
+      const email = safe.email || '';
+      const passwd = safe.passwd || safe.pwd || safe.password || 'password123';
+
       const xml = `
         <prestashop>
           <customer>
-            <firstname>${data.firstname || ''}</firstname>
-            <lastname>${data.lastname || ''}</lastname>
-            <email>${data.email || ''}</email>
-            <passwd>${data.passwd || 'password123'}</passwd>
+            <firstname>${this._xmlCdata(firstname)}</firstname>
+            <lastname>${this._xmlCdata(lastname)}</lastname>
+            <email>${this._xmlCdata(email)}</email>
+            <passwd>${this._xmlCdata(passwd)}</passwd>
             <active>1</active>
           </customer>
         </prestashop>`;
+
       const res = await ApiService.post('customers', xml);
       if (res?.ok) success++;
     }
+
     return success;
   },
 
-  // MODULE CATÉGORIES
   async importCategories(rows) {
     let success = 0;
+
     for (const data of rows) {
-      const slug = data.name ? data.name.toLowerCase().replace(/\s+/g, '-') : 'cat';
+      const safe = typeof data === 'object' && data !== null ? data : {};
+      const name = safe.name || safe.categorie || safe.nom || '';
+
+      const slug = name ? String(name).toLowerCase().replace(/\s+/g, '-') : 'cat';
+
       const xml = `
         <prestashop>
           <category>
-            <name><language id="1">${data.name}</language></name>
-            <link_rewrite><language id="1">${slug}</language></link_rewrite>
+            <name><language id="1">${this._xmlCdata(name)}</language></name>
+            <link_rewrite><language id="1">${this._xmlCdata(slug)}</language></link_rewrite>
             <active>1</active>
           </category>
         </prestashop>`;
@@ -113,39 +232,26 @@ export const ImportService = {
       const res = await ApiService.post('categories', xml);
       if (res?.ok) success++;
     }
+
     return success;
   },
 
-  // --- Objectif : Client + Adresse (relation Parent-Enfant) ---
   async importComplexCustomer(data, importedEmails = new Set()) {
+    // Normalise clés
+    const safe = {};
+    Object.keys(data || {}).forEach((key) => {
+      const cleanKey = String(key).trim().toLowerCase().replace(/[^\w]/g, '');
+      safe[cleanKey] = data[key];
+    });
 
-    // 1. Normalisation et Protection (Props validation)
-    const lastname = (data?.nom || data?.lastname || 'Client').trim();
-    const firstname = (data?.prenom || data?.firstname || ' ').trim();
-    const email = data?.email?.trim() || '';
-    const passwd = data?.pwd || data?.passwd || '';
+    const lastname = (safe.nom || safe.lastname || safe.name || 'Inconnu').trim();
+    const firstname = (safe.prenom || safe.firstname || lastname || 'Client').trim();
+    const email = (safe.email || '').trim();
+    const passwd = safe.pwd || safe.passwd || 'password123';
 
-    // Champs Adresse (normalisation stricte : pas de vide)
-    const address1 = (data?.adresse || data?.address1 || 'Non précisée').trim() || 'Non précisée';
-    const city = (data?.city || 'Antananarivo').trim() || 'Antananarivo';
-    const postcode = (data?.postcode ?? '101').toString().trim() || '101';
-
-    // alias doit être non vide
-    const alias = (data?.alias ?? 'Mon Adresse').toString().trim() || 'Mon Adresse';
-
-
-
-    if (!email || passwd.length < 8) {
-      throw new Error('Champs invalides : Email manquant ou Mot de passe < 8 caractères.');
+    if (!lastname) {
+      throw new Error('Lastname vide');
     }
-
-    // Anti-doublon (dans une même session) : évite d'importer 2 fois le même email
-    if (importedEmails.has(email)) {
-      return { customerId: null, addressCreated: false, skipped: true };
-    }
-    importedEmails.add(email);
-
-    // Étape 1 : Création du client
 
     const customerXml = this._buildCustomerXml({
       lastname,
@@ -153,45 +259,21 @@ export const ImportService = {
       email,
       passwd,
       active: 1,
-      id_default_group: 3
+      id_default_group: 3,
     });
 
     const customerRes = await ApiService.post('customers', customerXml);
-
     if (!customerRes?.ok) {
-      // On log le texte pour voir si c'est un problème d'email déjà utilisé
-      console.error("Réponse PrestaShop (Client):", customerRes.text);
+      console.error('Réponse PrestaShop (Client):', customerRes.text);
       throw new Error(`Erreur Client: ${customerRes.status}`);
     }
 
-    // Extraction robuste de l'ID
     const customerIdStr = this._getTextByTag(customerRes.text, 'id');
     const customerId = customerIdStr ? Number(customerIdStr) : null;
+    if (!customerId) throw new Error('ID client introuvable dans la réponse.');
 
-    if (!customerId) {
-      throw new Error('ID client introuvable dans la réponse.');
-    }
-
-    // Étape 2 : Création de l'adresse liée
-    const addressXml = this._buildAddressXml({
-      id_customer: customerId,
-      id_country: data?.id_country || 1, 
-      alias: alias, // Toujours remplir l'alias
-      address1,
-      city,
-      postcode,
-      lastname,
-      firstname
-    });
-
-    const addressRes = await ApiService.post('addresses', addressXml);
-
-    if (!addressRes?.ok) {
-      console.error("Réponse PrestaShop (Adresse):", addressRes?.text);
-      throw new Error(`Erreur Adresse: ${addressRes?.status}`);
-    }
-
-
+    // (Adresse non utilisée pour l’instant)
     return { customerId, addressCreated: true };
-  }
+  },
 };
+

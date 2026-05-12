@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système d'Import - Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        header p {
+            color: #666;
+            font-size: 16px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card h2::before {
+            font-size: 24px;
+        }
+        .card-doc::before { content: "📄"; }
+        .card-api::before { content: "🔌"; }
+        .card-cli::before { content: "💻"; }
+        .card-db::before { content: "🗄️"; }
+        .card-example::before { content: "📝"; }
+        .card-install::before { content: "🚀"; }
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .card a {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            background: #f0f4ff;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .card a:hover {
+            background: #667eea;
+            color: white;
+        }
+        .status {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        .status-ok { color: #4caf50; }
+        .status-warning { color: #ff9800; }
+        .status-error { color: #f44336; }
+        .architecture {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .architecture h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .architecture pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .workflow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .workflow-step {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin: 10px;
+            min-width: 150px;
+        }
+        .workflow-step h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .workflow-arrow {
+            color: #667eea;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        footer {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎉 Système d'Import de Données</h1>
+            <p>Architecture complète, modulaire et pédagogique pour importer vos données en PHP</p>
+        </header>
+
+        <div class="architecture">
+            <h2>📊 Architecture du Projet</h2>
+            <pre>
+backend/
+├── config/
+│   └── database.php              # Configuration (À MODIFIER)
+├── src/
+│   ├── controllers/
+│   │   └── ImportController.php  # Orchestrateur principal
+│   ├── services/
+│   │   ├── ProduitImportService.php
+│   │   ├── DetailProduitImportService.php
+│   │   ├── ClientImportService.php
+│   │   └── ImageImportService.php
+│   └── utils/
+│       ├── Logger.php
+│       ├── CsvReader.php
+│       ├── Validator.php
+│       └── DatabaseConnection.php
+├── api/
+│   └── import.php                # Point d'entrée HTTP
+├── logs/                         # Logs d'import (auto-créé)
+└── uploads/
+    └── images/                   # Images importées (auto-créé)
+            </pre>
+        </div>
+
+        <h2 style="color: white; margin-bottom: 20px; font-size: 24px;">📚 Documentation & Ressources</h2>
+
+        <div class="grid">
+            <div class="card card-doc">
+                <h2>README Complet</h2>
+                <p>Documentation complète : architecture, utilisation, API, format des données, dépannage.</p>
+                <p><strong>Commencer par lire ce fichier !</strong></p>
+                <a href="README.md" target="_blank">Lire le README.md</a>
+            </div>
+
+            <div class="card card-install">
+                <h2>Guide d'Installation</h2>
+                <p>Étapes pas à pas pour installer et configurer le système. Idéal pour les débutants.</p>
+                <p>Configuration BD, fichiers PHP, test de connexion...</p>
+                <a href="INSTALLATION.md" target="_blank">Lire INSTALLATION.md</a>
+            </div>
+
+            <div class="card card-example">
+                <h2>Exemples d'Utilisation</h2>
+                <p>Exemples de code pour utiliser le système en API, CLI ou programmé.</p>
+                <p>Format des fichiers CSV, structure des réponses...</p>
+                <a href="USAGE_EXAMPLE.php" target="_blank">Lire USAGE_EXAMPLE.php</a>
+            </div>
+
+            <div class="card card-db">
+                <h2>Schéma Base de Données</h2>
+                <p>Fichier SQL contenant toutes les tables, index et relations.</p>
+                <p>À exécuter sur votre MySQL/MariaDB.</p>
+                <a href="DATABASE_SCHEMA.sql" target="_blank">Lire DATABASE_SCHEMA.sql</a>
+            </div>
+
+            <div class="card card-api">
+                <h2>API HTTP</h2>
+                <p>Point d'entrée pour les uploads via formulaire web.</p>
+                <p>Endpoint: <code>POST /backend/api/import.php</code></p>
+                <p>Retour JSON avec résumé complet de l'import.</p>
+                <a href="api/import.php" target="_blank">Voir api/import.php</a>
+            </div>
+
+            <div class="card card-cli">
+                <h2>CLI Import</h2>
+                <p>Importer les données depuis la ligne de commande.</p>
+                <p><code>php cli_import.php --produits file.csv --images file.zip</code></p>
+                <p>Affichage formaté avec couleurs et statistiques.</p>
+                <a href="cli_import.php" target="_blank">Voir cli_import.php</a>
+            </div>
+        </div>
+
+        <div class="workflow">
+            <div class="workflow-step">
+                <h3>1️⃣ Installation</h3>
+                <p>Lire INSTALLATION.md</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+                <h3>2️⃣ Configuration</h3>
+                <p>Modifier config/database.php</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+                <h3>3️⃣ Préparer Données</h3>
+                <p>CSV + ZIP valides</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+                <h3>4️⃣ Importer</h3>
+                <p>CLI ou API</p>
+            </div>
+            <div class="workflow-arrow">→</div>
+            <div class="workflow-step">
+                <h3>5️⃣ Vérifier</h3>
+                <p>Logs + BD</p>
+            </div>
+        </div>
+
+        <div class="architecture">
+            <h2>⚙️ Étapes d'Import</h2>
+            <pre>
+1. Produits
+   • Lire le CSV
+   • Valider chaque ligne
+   • Créer les catégories
+   • Insérer dans BD
+   ↓
+2. Détails Produits
+   • Lire le CSV
+   • Valider les variantes
+   • Créer le stock
+   • Insérer dans BD
+   ↓
+3. Clients (+ Commandes)
+   • Lire le CSV
+   • Vérifier pas de doublons
+   • Créer adresses
+   • Parser et créer commandes
+   ↓
+4. Images
+   • Dézipper le fichier ZIP
+   • Valider les images
+   • Sauvegarder les fichiers
+   • Référencer dans BD
+            </pre>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>✨ Points Clés</h2>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 10px;">✅ Modulaire (services séparés)</li>
+                    <li style="margin-bottom: 10px;">✅ Transactions (rollback en cas d'erreur)</li>
+                    <li style="margin-bottom: 10px;">✅ Validation stricte</li>
+                    <li style="margin-bottom: 10px;">✅ Logs détaillés</li>
+                    <li style="margin-bottom: 10px;">✅ Gestion d'erreurs non-bloquantes</li>
+                    <li style="margin-bottom: 10px;">✅ Clean Code (petites fonctions)</li>
+                    <li style="margin-bottom: 10px;">✅ Commentaires pédagogiques</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>🚀 Démarrage Rapide</h2>
+                <ol style="padding-left: 20px;">
+                    <li>Lire INSTALLATION.md</li>
+                    <li>Éditer config/database.php</li>
+                    <li>Importer DATABASE_SCHEMA.sql</li>
+                    <li>Préparer vos CSV + ZIP</li>
+                    <li>Lancer CLI ou API</li>
+                    <li>Vérifier les logs</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>📋 Services Disponibles</h2>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 10px;"><strong>ProduitImportService</strong></li>
+                    <li style="margin-bottom: 10px;"><strong>DetailProduitImportService</strong></li>
+                    <li style="margin-bottom: 10px;"><strong>ClientImportService</strong></li>
+                    <li style="margin-bottom: 10px;"><strong>ImageImportService</strong></li>
+                    <li style="margin-bottom: 10px;"><strong>ImportController</strong> (orchestre tout)</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Système d'Import de Données</strong> - Architecture PHP propre et modulaire</p>
+            <p style="margin-top: 10px; color: #999;">Créé pour un apprentissage pédagogique | PHP 7.4+ | MySQL 5.7+</p>
+        </footer>
+    </div>
+</body>
+</html>

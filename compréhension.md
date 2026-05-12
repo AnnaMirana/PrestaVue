@@ -94,3 +94,36 @@ Si tu veux que je fasse exactement ces changements (sans casser le code), je doi
 src/App.vue (supprimer emojis + commentaires + retirer le <style scoped>)
 créer/importer un nouveau fichier CSS (ex: src/app.css ou src/style-app.css)
 mettre à jour l’import dans App.vue ou main.js
+
+
+erreur d'import , tout ou rien , donc vo misy erreur n import na fichier iza na iza de misy tafiditra n amn fichier reetr donc tsy misy tafiditra na fichier na 1 (tsy asina table temporaire)
+Donc zany mbola hanao relation 
+Ny ao @dashboard zany mety misy possiblilité bdb
+
+
+prendre en compte les relations des tables , comme ca si le csv pour l'import contient certaines colonnes qui ne sont pas par défaut dans les colonnes de prestashop donc de notre new app aussi on fait jouer sur les relations , exemple pour entrer des donnees de clients alors que le csv contient des adresses , ont doit d'abord entrer les adresses 
+
+
+////////Améliore mon fichier ImportService.js pour gérer une importation complexe Client + Adresse (relation Parent-Enfant).
+
+Objectif : Créer un client à partir des colonnes du CSV (nom, email, pwd, adresse), puis lui associer immédiatement une adresse dans PrestaShop.
+
+Logique attendue :
+
+Orchestration : Crée une méthode importComplexCustomer(data) qui utilise async/await.
+
+Étape 1 (Client) : Envoie un POST à /customers. Si réussi, utilise DOMParser pour extraire l'ID du client depuis la réponse XML (balise <id>).
+
+Étape 2 (Adresse) : Si l'ID est récupéré, envoie un second POST à /addresses en incluant cet ID dans le champ <id_customer>. Utilise également les colonnes adresse, nom et un id_country par défaut (ex: 1).
+
+Sécurité : Si la création du client échoue (erreur 400 ou 500), ne tente pas de créer l'adresse et retourne une erreur explicite.
+
+Contraintes de style (Standards ITU Madagascar) :
+
+Respecte la validation des Props (Fichier 16) : assure-toi que les variables ne sont pas undefined.
+
+Utilise des blocs <![CDATA[ ]]> dans le XML pour protéger les caractères spéciaux (noms ou adresses complexes).
+
+Séparez la construction des chaînes XML dans des fonctions d'aide privées pour garder le code lisible (Fichier 14 - Clean Code).
+
+Pareil pour produit et detail produit tu peux voir les fichier a importer dans les dossier .csv présent dans notre dossier (notament import-data-mai-26 - fichier1.csv , import-data-mai-26 - fichier1.csv ; import-data-mai-26 - fichier1.csv)

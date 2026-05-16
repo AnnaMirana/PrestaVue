@@ -3,6 +3,9 @@ import { AuthService } from './services/AuthService.js'
 
 const LoginView = () => import('./views/LoginView.vue')
 const BackofficeView = () => import('./views/BackofficeView.vue')
+const DashboardView = () => import('./views/DashboardView.vue')
+const FrontofficeView = () => import('./views/FrontofficeView.vue')
+const ShopLoginView = () => import('./views/ShopLoginView.vue')
 
 const routes = [
   {
@@ -15,6 +18,15 @@ const routes = [
     }
   },
   {
+    path: '/shop-login',
+    name: 'ShopLogin',
+    component: ShopLoginView,
+    meta: {
+      requiresAuth: false,
+      title: 'Connexion Client - PrestaVue'
+    }
+  },
+  {
     path: '/backoffice',
     name: 'Backoffice',
     component: BackofficeView,
@@ -24,12 +36,30 @@ const routes = [
     }
   },
   {
+    path: '/shop',
+    name: 'Shop',
+    component: FrontofficeView,
+    meta: {
+      requiresAuth: false,
+      title: 'Boutique - PrestaVue'
+    }
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: DashboardView,
+    meta: {
+      requiresAuth: true,
+      title: 'Tableau de bord - PrestaVue'
+    }
+  },
+  {
     path: '/',
-    redirect: '/backoffice'
+    redirect: '/shop-login'
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/backoffice'
+    redirect: '/shop'
   }
 ];
 
